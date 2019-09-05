@@ -1,0 +1,10 @@
+version: '2'
+services:
+  alertmanager:
+    image: prom/alertmanager:v0.18.0
+    ports:
+      - 9093:9093
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    container_name: alertmanager
+

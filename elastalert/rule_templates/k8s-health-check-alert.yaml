@@ -1,0 +1,40 @@
+# >>>elasticsearch information
+######################################################
+es_host: 172.0.13.13
+es_port: 9200
+index: eventrouter_deflector
+timestamp_field: event_lastTimestamp
+timestamp_type: iso
+#timestamp_format_expr: 'ts[:10] + ts[26:]'
+#####################################################
+
+
+# >>> rule type
+######################################################
+name: k8s health check
+type: frequency
+num_events: 1
+timeframe:
+    minutes: 5
+
+filter:
+- term:
+    event_reason: Unhealthy
+
+realert:
+  minutes: 5
+
+######################################################
+
+
+# >>> alert infomation
+######################################################
+alert:
+  - alerts.AlertmanagerAlerter
+
+alertmanager_host: http://172.0.32.143:9093
+alertmanager_alertname: "K8S Health Check Alert"
+alertmanager_labels: {"environment":"sit-elastalert","service":"K8S","instance":"{source}","severity":"warning","group":"k8s event health check","timestamp":"{timestamp}"}
+alertmanager_annotations: {"description":"{message}"}
+alertmanager_timeout: 86400
+######################################################

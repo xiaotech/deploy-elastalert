@@ -1,0 +1,57 @@
+# >>>elasticsearch information
+######################################################
+es_host: 172.0.13.13
+es_port: 9200
+index: eventrouter_deflector
+timestamp_field: event_lastTimestamp
+timestamp_type: iso
+#timestamp_format_expr: 'ts[:10] + ts[26:]'
+#####################################################
+
+
+# >>> rule type
+######################################################
+name: k8s event restart check
+type: frequency
+num_events: 1
+timeframe:
+    minutes: 5
+
+filter:
+- term:
+    event_reason: BackOff
+    
+query_key: source
+
+realert:
+  minutes: 1
+
+######################################################
+
+
+# >>> alert infomation
+######################################################
+alert:
+#  - alerts.AlertmanagerAlerter
+  - alerta
+alertmanager_host: http://alerta.sit.caijj.net:9093
+alertmanager_alertname: "K8S-Event-Restart-Check-Alert"
+alertmanager_labels: {"environment":"K8S","service":"restart-check","instance":"{source}","severity":"warning","group":"k8s event restart check","namespace":"{event_involvedObject_namespace}"}
+alertmanager_annotations: {"description":"{message}","timestamp":"{timestamp}"}
+alertmanager_timeout: 720
+######################################################
+alerta_api_url: "http://alerta.sit.caijj.net/api/alert"
+alerta_api_key: "WR-qmBI8ZW0zymfVQT53-9V85Vyz9rqsl_Da0K3_"
+
+alerta_timeout: 720
+alerta_service: ["restart-check"]
+alerta_environment: "K8S"
+alerta_severity: "warning"
+alerta_resource: "{source}"
+alerta_event: "BackOff"
+alerta_text: "{message}"
+alerta_group: "k8s-event-restart-check"
+alerta_tags: ["timestamp:{timestamp}"]
+alerta_attributes_keys: ["namespace"]
+alerta_attributes_values: ["%(event_involvedObject_namespace)s"]
+alerta_graylog_link: "graylog.dmz.sit.caijj.net/streams/5c7f63f283a76365eee95dfd/search?rangetype=relative&fields=message,source&width=1440&highlightMessage=&relative=300&q=event_reason:BackOff AND source:{source}"

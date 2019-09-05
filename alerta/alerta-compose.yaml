@@ -1,0 +1,32 @@
+version: '2.1'
+services:
+  web:
+    image: alerta/alerta-web
+    ports:
+      - "80:8080"
+    volumes:
+      - ./alerta-src/settings.py:/venv/lib/python3.6/site-packages/alerta/settings.py
+      - ./alerta-src/counts.html:/venv/lib/python3.6/site-packages/alerta//templates/oembed/counts.html
+      - ./alerta-src/oembed.py:/venv/lib/python3.6/site-packages/alerta//views/oembed.py
+      - ./alerta-src/alerta.py:/venv/lib/python3.6/site-packages/alerta/models/alarms/alerta.py
+      - ./alerta-src/prometheus.py:/venv/lib/python3.6/site-packages/alerta/webhooks/prometheus.py
+    depends_on:
+      - db
+    environment:
+     # - DEBUG=1  # remove this line to turn DEBUG off
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/monitoring
+      - AUTH_REQUIRED=False
+      - ADMIN_USERS=admin@alerta.io,devops@alerta.io #default password: alerta
+      - PLUGINS=sns,blackout,normalise,enhance
+    restart: always
+    container_name: alerta
+  db:
+    image: postgres
+    volumes:
+      - /data/pg-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: monitoring
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    restart: always
+    container_name: alerta_db

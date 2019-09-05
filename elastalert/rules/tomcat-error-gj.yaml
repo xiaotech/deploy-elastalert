@@ -1,0 +1,47 @@
+# >>>elasticsearch information
+######################################################
+es_host: 172.0.13.13
+es_port: 9200
+index: tomcat-syslog_deflector
+timestamp_field: timestamp
+timestamp_type: custom
+timestamp_format: "%Y-%m-%d %H:%M:%S.%f"
+timestamp_format_expr: 'ts[:23]'
+#timestamp_format_expr: 'ts[:10] + ts[26:]'
+#####################################################
+
+
+# >>> rule type
+######################################################
+name: tomcat error for gj
+type: frequency
+num_events: 1
+timeframe:
+    minutes: 5
+
+filter:
+- term:
+    level: error
+- query:
+    query_string:
+      query: org.springframework.amqp.rabbit.listener.exception.ListenerExecutionFailedException
+    
+query_key: source
+
+realert:
+  minutes: 5
+
+######################################################
+
+
+# >>> alert infomation
+######################################################
+alert:
+  - alerts.AlertmanagerAlerter
+
+alertmanager_host: http://alerta.sit.caijj.net:9093
+alertmanager_alertname: "tomcat error for gj"
+alertmanager_labels: {"environment":"TOMCAT","service":"ListenerExecutionFailedException","instance":"{source}","severity":"error","group":"ListenerExecutionFailedException","timestamp":"{timestamp}"}
+alertmanager_annotations: {"description":"{message}"}
+alertmanager_timeout: 86400
+######################################################
